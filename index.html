@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>戦闘シミュレータ</title>
+<style>
+    body { font-family: sans-serif; }
+    .container { display: flex; gap: 40px; }
+    .army { width: 360px; }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    .slot {
+        border: 1px solid #333;
+        padding: 6px;
+        text-align: center;
+        min-height: 70px;
+        background: #f8f8f8;
+    }
+    .dead {
+        background: #ddd;
+        color: #999;
+    }
+    .controls, .result {
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+
+<h2>戦闘シミュレータ</h2>
+
+<div class="controls">
+    <h3>自軍</h3>
+    出撃数 <input id="allyCount" type="number" value="10">
+    火力倍率 <input id="allyAtk" type="number" value="10">
+    耐久倍率 <input id="allyHp" type="number" value="10">
+    鉄壁(%) <input id="allyWall" type="number" value="0">
+    鉄壁R <input id="allyWallRound" type="number" value="0">
+
+    <h3>敵軍</h3>
+    出撃数 <input id="enemyCount" type="number" value="10">
+    火力倍率 <input id="enemyAtk" type="number" value="10">
+    耐久倍率 <input id="enemyHp" type="number" value="10">
+    鉄壁(%) <input id="enemyWall" type="number" value="0">
+    鉄壁R <input id="enemyWallRound" type="number" value="0">
+
+    <h3>侵攻側</h3>
+    <select id="attacker">
+        <option value="ally">自軍</option>
+        <option value="enemy">敵軍</option>
+    </select>
+
+    <br><br>
+    <button onclick="startSimulation()">シミュレーション開始</button>
+</div>
+
+<hr>
+
+<div class="container">
+    <div class="army">
+        <h3>自軍</h3>
+        <div class="grid" id="allyGrid"></div>
+    </div>
+    <div class="army">
+        <h3>敵軍</h3>
+        <div class="grid" id="enemyGrid"></div>
+    </div>
+</div>
+
+<div class="controls">
+    ターン: <span id="turn">0</span>
+    ラウンド: <span id="round">1</span><br><br>
+    <button onclick="nextTurn()">次のターン</button>
+    <button onclick="nextRound()">次のラウンド</button>
+    <button onclick="finishBattle()">戦闘終了へ</button>
+</div>
+
+<div class="result" id="result"></div>
+
+<script>
+let allySlots = [], enemySlots = [];
+let turn = 0, round = 1;
+let turnOrder = [];
+let battleEnded = false;
+
+function createSlots(count, hpMul) {
+    let slots = Array.from({length: 9}, () => ({ units: 0, hp: 0 }));
+    let i = 0;
+    while (count > 0) {
+        slots[i % 9].units++;
+        count--;
+        i++;
+    }
+    slots.forEach(s => s.hp = s.units * hpMul);
+    return slots;
+}
+
+function render() {
+    const renderGrid = (slots, gridId) => {
+        const grid = document.getElementById(gridId);
+        grid.innerHTML = "";
+        slots.forEach((s, i) => {
+            const div = document.createElement("div");
+            div.className = "slot" + (s.units === 0 ? " dead" : "");
+            div.innerHTML = `
+                台数: ${s.units}<br>
+                HP: ${Math.max(0, s.hp)}<br>
+                スロット${i+1}
+            `;
+            grid.appendChild(div);
+        });
+    };
+    renderGrid(allySlots, "allyGrid");
+    renderGrid(enemySlots, "enemyGrid");
+    document.getElementById("turn").textContent = turn;
+    document.getElementById("round").textContent = round;
+}
+
+function startSimulation() {
+    allySlots = createSlots(+allyCount.value, +allyHp.value);
+    enemySlots = createSlots(+enemyCount.value, +enemyHp.value);
+
+    turn = 0;
+    round = 1;
+    battleEnded = false;
+
+    const first = attacker.value === "ally" ? "ally" : "enemy";
+    const second = first === "ally" ? "enemy" : "ally";
+
+    turnOrder = [];
+    for (let i = 0; i < 9; i++) {
+        turnOrder.push({ side: first, index: i });
+        turnOrder.push({ side: second, index: i });
+    }
+
+    render();
+    result.innerHTML = "";
+}
+
+function applyDamage(attackerSide, index) {
+    const atkSlots = attackerSide === "ally" ? allySlots : enemySlots;
+    const defSlots = attackerSide === "ally" ? enemySlots : allySlots;
+
+    const atkUnit = atkSlots[index];
+    if (atkUnit.units === 0) return;
+
+    const fire = atkUnit.units * (attackerSide === "ally" ? +allyAtk.value : +enemyAtk.value);
+
+    const aliveTargets = defSlots.filter(s => s.units > 0);
+    if (aliveTargets.length === 0) return;
+
+    let dmg = fire / aliveTargets.length;
+
+    const wall = attackerSide === "ally" ? +enemyWall.value : +allyWall.value;
+    const wallRound = attackerSide === "ally" ? +enemyWallRound.value : +allyWallRound.value;
+
+    if (round <= wallRound) {
+        dmg *= (1 - wall / 100);
+    }
+
+    aliveTargets.forEach(s => {
+        s.hp -= dmg;
+        while (s.hp <= (s.units - 1) * (attackerSide === "ally" ? +enemyHp.value : +allyHp.value)) {
+            s.units--;
+        }
+        if (s.units <= 0) {
+            s.units = 0;
+            s.hp = 0;
+        }
+    });
+}
+
+function checkEnd() {
+    const allyAlive = allySlots.some(s => s.units > 0);
+    const enemyAlive = enemySlots.some(s => s.units > 0);
+
+    if (!allyAlive || !enemyAlive) {
+        battleEnded = true;
+        showResult();
+        return true;
+    }
+    return false;
+}
+
+function nextTurn() {
+    if (battleEnded) return;
+
+    const t = turnOrder[turn % turnOrder.length];
+    applyDamage(t.side, t.index);
+
+    turn++;
+    if (turn % turnOrder.length === 0) round++;
+
+    render();
+    checkEnd();
+}
+
+function nextRound() {
+    const targetRound = round + 1;
+    while (!battleEnded && round < targetRound) {
+        nextTurn();
+    }
+}
+
+function finishBattle() {
+    while (!battleEnded) {
+        nextTurn();
+    }
+}
+
+function showResult() {
+    const sum = slots => slots.reduce((a, s) => {
+        a.hp += s.hp;
+        a.units += s.units;
+        return a;
+    }, {hp:0, units:0});
+
+    const a = sum(allySlots);
+    const e = sum(enemySlots);
+
+    result.innerHTML = `
+        <h3>戦闘結果</h3>
+        自軍 HP合計: ${a.hp} / 台数合計: ${a.units}<br>
+        敵軍 HP合計: ${e.hp} / 台数合計: ${e.units}<br><br>
+        <strong>${a.units > e.units ? "自軍 Victory" : "敵軍 Victory"}</strong>
+    `;
+}
+</script>
+
+</body>
+</html>
