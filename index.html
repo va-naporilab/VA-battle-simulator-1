@@ -2,232 +2,231 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>戦闘シミュレータ</title>
+<title>戦闘シミュレータ（強化版）</title>
+
 <style>
-    body { font-family: sans-serif; }
-    .container { display: flex; gap: 40px; }
-    .army { width: 360px; }
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-    }
-    .slot {
-        border: 1px solid #333;
-        padding: 6px;
-        text-align: center;
-        min-height: 70px;
-        background: #f8f8f8;
-    }
-    .dead {
-        background: #ddd;
-        color: #999;
-    }
-    .controls, .result {
-        margin-top: 20px;
-    }
+body {
+    font-family: system-ui, sans-serif;
+    background: #f4f6f8;
+}
+
+h2, h3 { margin: 6px 0; }
+
+.panel {
+    background: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.1);
+    margin-bottom: 16px;
+}
+
+.flex {
+    display: flex;
+    gap: 24px;
+}
+
+.army {
+    width: 360px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.slot {
+    border-radius: 8px;
+    padding: 6px;
+    text-align: center;
+    font-size: 13px;
+    border: 2px solid #999;
+}
+
+.ally { background: #e8f2ff; border-color: #2b6cb0; }
+.enemy { background: #ffecec; border-color: #c53030; }
+
+.dead {
+    background: #ddd;
+    color: #777;
+    border-color: #aaa;
+}
+
+.active {
+    box-shadow: 0 0 0 3px gold inset;
+}
+
+.controls button {
+    margin: 4px;
+}
+
+.log {
+    height: 240px;
+    overflow-y: auto;
+    font-size: 12px;
+    background: #111;
+    color: #0f0;
+    padding: 8px;
+    border-radius: 6px;
+}
 </style>
 </head>
 <body>
 
-<h2>戦闘シミュレータ</h2>
+<h2>戦闘シミュレータ（可視化強化版）</h2>
 
-<div class="controls">
-    <h3>自軍</h3>
-    出撃数 <input id="allyCount" type="number" value="10">
-    火力倍率 <input id="allyAtk" type="number" value="10">
-    耐久倍率 <input id="allyHp" type="number" value="10">
-    鉄壁(%) <input id="allyWall" type="number" value="0">
-    鉄壁R <input id="allyWallRound" type="number" value="0">
-
-    <h3>敵軍</h3>
-    出撃数 <input id="enemyCount" type="number" value="10">
-    火力倍率 <input id="enemyAtk" type="number" value="10">
-    耐久倍率 <input id="enemyHp" type="number" value="10">
-    鉄壁(%) <input id="enemyWall" type="number" value="0">
-    鉄壁R <input id="enemyWallRound" type="number" value="0">
-
-    <h3>侵攻側</h3>
-    <select id="attacker">
-        <option value="ally">自軍</option>
-        <option value="enemy">敵軍</option>
-    </select>
-
-    <br><br>
-    <button onclick="startSimulation()">シミュレーション開始</button>
+<div class="panel">
+<h3>設定</h3>
+<div class="flex">
+<div>
+<b>自軍</b><br>
+出撃 <input id="allyCount" type="number" value="10"><br>
+火力 <input id="allyAtk" type="number" value="10"><br>
+耐久 <input id="allyHp" type="number" value="10"><br>
+鉄壁% <input id="allyWall" type="number" value="0"><br>
+鉄壁R <input id="allyWallRound" type="number" value="0">
 </div>
 
-<hr>
-
-<div class="container">
-    <div class="army">
-        <h3>自軍</h3>
-        <div class="grid" id="allyGrid"></div>
-    </div>
-    <div class="army">
-        <h3>敵軍</h3>
-        <div class="grid" id="enemyGrid"></div>
-    </div>
+<div>
+<b>敵軍</b><br>
+出撃 <input id="enemyCount" type="number" value="10"><br>
+火力 <input id="enemyAtk" type="number" value="10"><br>
+耐久 <input id="enemyHp" type="number" value="10"><br>
+鉄壁% <input id="enemyWall" type="number" value="0"><br>
+鉄壁R <input id="enemyWallRound" type="number" value="0">
 </div>
 
-<div class="controls">
-    ターン: <span id="turn">0</span>
-    ラウンド: <span id="round">1</span><br><br>
-    <button onclick="nextTurn()">次のターン</button>
-    <button onclick="nextRound()">次のラウンド</button>
-    <button onclick="finishBattle()">戦闘終了へ</button>
+<div>
+<b>侵攻側</b><br>
+<select id="attacker">
+<option value="ally">自軍</option>
+<option value="enemy">敵軍</option>
+</select><br><br>
+<button onclick="startSimulation()">開始</button>
+</div>
+</div>
 </div>
 
-<div class="result" id="result"></div>
+<div class="flex">
+<div class="army panel">
+<h3>自軍</h3>
+<div id="allyGrid" class="grid"></div>
+</div>
+
+<div class="army panel">
+<h3>敵軍</h3>
+<div id="enemyGrid" class="grid"></div>
+</div>
+</div>
+
+<div class="panel controls">
+ターン <span id="turn">0</span> /
+ラウンド <span id="round">1</span><br>
+<button onclick="nextTurn()">次のターン</button>
+<button onclick="nextRound()">次のラウンド</button>
+<button onclick="finishBattle()">戦闘終了へ</button>
+</div>
+
+<div class="panel">
+<h3>戦闘ログ</h3>
+<div id="log" class="log"></div>
+</div>
 
 <script>
-let allySlots = [], enemySlots = [];
-let turn = 0, round = 1;
-let turnOrder = [];
-let battleEnded = false;
+let allySlots=[], enemySlots=[], turn=0, round=1;
+let order=[], ended=false, log=[];
 
-function createSlots(count, hpMul) {
-    let slots = Array.from({length: 9}, () => ({ units: 0, hp: 0 }));
-    let i = 0;
-    while (count > 0) {
-        slots[i % 9].units++;
-        count--;
-        i++;
-    }
-    slots.forEach(s => s.hp = s.units * hpMul);
-    return slots;
+function createSlots(cnt,hp){
+    let s=[...Array(9)].map(()=>({u:0,h:0}));
+    let i=0;
+    while(cnt>0){s[i++%9].u++;cnt--;}
+    s.forEach(x=>x.h=x.u*hp);
+    return s;
 }
 
-function render() {
-    const renderGrid = (slots, gridId) => {
-        const grid = document.getElementById(gridId);
-        grid.innerHTML = "";
-        slots.forEach((s, i) => {
-            const div = document.createElement("div");
-            div.className = "slot" + (s.units === 0 ? " dead" : "");
-            div.innerHTML = `
-                台数: ${s.units}<br>
-                HP: ${Math.max(0, s.hp)}<br>
-                スロット${i+1}
-            `;
-            grid.appendChild(div);
+function render(active){
+    const draw=(slots,id,cls)=>{
+        const g=document.getElementById(id); g.innerHTML="";
+        slots.forEach((s,i)=>{
+            const d=document.createElement("div");
+            let c="slot "+cls+(s.u===0?" dead":"");
+            if(active && active.side===cls && active.idx===i) c+=" active";
+            d.className=c;
+            d.innerHTML=`台数:${s.u}<br>HP:${Math.round(s.h)}<br>Slot${i+1}`;
+            g.appendChild(d);
         });
     };
-    renderGrid(allySlots, "allyGrid");
-    renderGrid(enemySlots, "enemyGrid");
-    document.getElementById("turn").textContent = turn;
-    document.getElementById("round").textContent = round;
+    draw(allySlots,"allyGrid","ally");
+    draw(enemySlots,"enemyGrid","enemy");
+    turnSpan.textContent=turn;
+    roundSpan.textContent=round;
 }
 
-function startSimulation() {
-    allySlots = createSlots(+allyCount.value, +allyHp.value);
-    enemySlots = createSlots(+enemyCount.value, +enemyHp.value);
-
-    turn = 0;
-    round = 1;
-    battleEnded = false;
-
-    const first = attacker.value === "ally" ? "ally" : "enemy";
-    const second = first === "ally" ? "enemy" : "ally";
-
-    turnOrder = [];
-    for (let i = 0; i < 9; i++) {
-        turnOrder.push({ side: first, index: i });
-        turnOrder.push({ side: second, index: i });
+function startSimulation(){
+    allySlots=createSlots(+allyCount.value,+allyHp.value);
+    enemySlots=createSlots(+enemyCount.value,+enemyHp.value);
+    turn=0; round=1; ended=false; log=[];
+    const a=attacker.value;
+    for(let i=0;i<9;i++){
+        order.push({side:a,idx:i});
+        order.push({side:a==="ally"?"enemy":"ally",idx:i});
     }
-
+    logBox.innerHTML="";
     render();
-    result.innerHTML = "";
 }
 
-function applyDamage(attackerSide, index) {
-    const atkSlots = attackerSide === "ally" ? allySlots : enemySlots;
-    const defSlots = attackerSide === "ally" ? enemySlots : allySlots;
+function damage(side,idx){
+    const atk=side==="ally"?allySlots:enemySlots;
+    const def=side==="ally"?enemySlots:allySlots;
+    if(atk[idx].u===0) return;
+    const fire=atk[idx].u*(side==="ally"?+allyAtk.value:+enemyAtk.value);
+    const tgt=def.filter(s=>s.u>0);
+    if(!tgt.length) return;
+    let d=fire/tgt.length;
+    const wall=side==="ally"?+enemyWall.value:+allyWall.value;
+    const wr=side==="ally"?+enemyWallRound.value:+allyWallRound.value;
+    if(round<=wr) d*=1-wall/100;
 
-    const atkUnit = atkSlots[index];
-    if (atkUnit.units === 0) return;
-
-    const fire = atkUnit.units * (attackerSide === "ally" ? +allyAtk.value : +enemyAtk.value);
-
-    const aliveTargets = defSlots.filter(s => s.units > 0);
-    if (aliveTargets.length === 0) return;
-
-    let dmg = fire / aliveTargets.length;
-
-    const wall = attackerSide === "ally" ? +enemyWall.value : +allyWall.value;
-    const wallRound = attackerSide === "ally" ? +enemyWallRound.value : +allyWallRound.value;
-
-    if (round <= wallRound) {
-        dmg *= (1 - wall / 100);
-    }
-
-    aliveTargets.forEach(s => {
-        s.hp -= dmg;
-        while (s.hp <= (s.units - 1) * (attackerSide === "ally" ? +enemyHp.value : +allyHp.value)) {
-            s.units--;
-        }
-        if (s.units <= 0) {
-            s.units = 0;
-            s.hp = 0;
-        }
+    tgt.forEach(s=>{
+        s.h-=d;
+        while(s.h<=(s.u-1)*(side==="ally"?+enemyHp.value:+allyHp.value)) s.u--;
+        if(s.u<=0){s.u=0;s.h=0;}
     });
+    log.push(`T${turn} R${round} ${side} Slot${idx+1} dmg:${d.toFixed(2)} x${tgt.length}`);
 }
 
-function checkEnd() {
-    const allyAlive = allySlots.some(s => s.units > 0);
-    const enemyAlive = enemySlots.some(s => s.units > 0);
-
-    if (!allyAlive || !enemyAlive) {
-        battleEnded = true;
-        showResult();
-        return true;
+function checkEnd(){
+    if(!allySlots.some(s=>s.u>0)||!enemySlots.some(s=>s.u>0)){
+        ended=true;
+        log.push("=== 戦闘終了 ===");
+        logBox.innerHTML=log.join("<br>");
     }
-    return false;
 }
 
-function nextTurn() {
-    if (battleEnded) return;
-
-    const t = turnOrder[turn % turnOrder.length];
-    applyDamage(t.side, t.index);
-
+function nextTurn(){
+    if(ended) return;
+    const a=order[turn%order.length];
+    damage(a.side,a.idx);
     turn++;
-    if (turn % turnOrder.length === 0) round++;
-
-    render();
+    if(turn%order.length===0) round++;
+    render(a);
     checkEnd();
+    logBox.innerHTML=log.slice(-50).join("<br>");
+    logBox.scrollTop=logBox.scrollHeight;
 }
 
-function nextRound() {
-    const targetRound = round + 1;
-    while (!battleEnded && round < targetRound) {
-        nextTurn();
-    }
+function nextRound(){
+    const r=round+1;
+    while(!ended&&round<r) nextTurn();
 }
 
-function finishBattle() {
-    while (!battleEnded) {
-        nextTurn();
-    }
+function finishBattle(){
+    while(!ended) nextTurn();
 }
 
-function showResult() {
-    const sum = slots => slots.reduce((a, s) => {
-        a.hp += s.hp;
-        a.units += s.units;
-        return a;
-    }, {hp:0, units:0});
-
-    const a = sum(allySlots);
-    const e = sum(enemySlots);
-
-    result.innerHTML = `
-        <h3>戦闘結果</h3>
-        自軍 HP合計: ${a.hp} / 台数合計: ${a.units}<br>
-        敵軍 HP合計: ${e.hp} / 台数合計: ${e.units}<br><br>
-        <strong>${a.units > e.units ? "自軍 Victory" : "敵軍 Victory"}</strong>
-    `;
-}
+const turnSpan=document.getElementById("turn");
+const roundSpan=document.getElementById("round");
+const logBox=document.getElementById("log");
 </script>
 
 </body>
