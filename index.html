@@ -61,8 +61,8 @@ canvas{background:#fafafa;border:1px solid #ccc;border-radius:6px}
 ターン <span id="turn">1</span> /
 ラウンド <span id="round">1</span><br>
 <button onclick="nextTurn()">次のターン</button>
-<button onclick="toggleAuto()">▶/■ 自動</button>
-速度 <input id="speed" type="range" min="0.2" max="2" step="0.2" value="1"> <span id="speedVal">1.0</span>s
+<button onclick="toggleAuto()">▶/■ 自動進行</button>
+１ターンの時間間隔 <input id="speed" type="range" min="0.2" max="2" step="0.2" value="1"> <span id="speedVal">1.0</span>s
 </div>
 
 <div class="panel">
@@ -128,6 +128,14 @@ function step(){
   let tgt=def.filter(x=>x.u>0);
   if(tgt.length){
    let d=fire/tgt.length;
+   // ===== 鉄壁処理（修正点）=====
+   let wall = o.s === "ally" ? +enemyWall.value : +allyWall.value;
+   let wallRound = o.s === "ally" ? +enemyWallRound.value : +allyWallRound.value;
+
+   if (round <= wallRound && wall > 0) {
+    d *= (1 - wall / 100);
+   }
+   // =============================
    tgt.forEach(s=>{
     s.h-=d;
     while(s.h<=(s.u-1)*(o.s==="ally"?+enemyHp.value:+allyHp.value))s.u--;
