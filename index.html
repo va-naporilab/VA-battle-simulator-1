@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>戦闘シミュレータ（検証用拡張版）</title>
+<title>戦闘挙動シミュレータ</title>
 
 <style>
 body{font-family:system-ui;background:#eef2f6}
@@ -29,16 +29,16 @@ canvas{background:#fafafa;border:1px solid #ccc;border-radius:6px}
 <div>
 <b>自軍</b><br>
 出撃 <input id="allyCount" type="number" value="200"><br>
-火力 <input id="allyAtk" type="number" value="10"><br>
-耐久 <input id="allyHp" type="number" value="10"><br>
+火力 <input id="allyAtk" type="number" value="100"><br>
+耐久 <input id="allyHp" type="number" value="160"><br>
 鉄壁% <input id="allyWall" type="number" value="40"><br>
 鉄壁R <input id="allyWallRound" type="number" value="2">
 </div>
 <div>
 <b>敵軍</b><br>
 出撃 <input id="enemyCount" type="number" value="200"><br>
-火力 <input id="enemyAtk" type="number" value="10"><br>
-耐久 <input id="enemyHp" type="number" value="10"><br>
+火力 <input id="enemyAtk" type="number" value="100"><br>
+耐久 <input id="enemyHp" type="number" value="160"><br>
 鉄壁% <input id="enemyWall" type="number" value="40"><br>
 鉄壁R <input id="enemyWallRound" type="number" value="2">
 </div>
@@ -62,7 +62,7 @@ canvas{background:#fafafa;border:1px solid #ccc;border-radius:6px}
 ラウンド <span id="round">1</span><br>
 <button onclick="nextTurn()">次のターン</button>
 <button onclick="toggleAuto()">▶/■ 自動進行</button>
-１ターンの時間間隔 <input id="speed" type="range" min="0.2" max="2" step="0.2" value="1"> <span id="speedVal">1.0</span>s
+１ターンの時間間隔 <input id="speed" type="range" min="0.2" max="2" step="0.2" value="0.5"> <span id="speedVal">1.0</span>s
 </div>
 
 <div class="panel">
