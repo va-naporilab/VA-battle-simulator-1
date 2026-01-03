@@ -23,7 +23,7 @@ canvas{background:#fafafa;border:1px solid #ccc;border-radius:6px}
 </head>
 <body>
 
-<h2>戦闘シミュレータ（検証用）</h2>
+<h2>戦闘シミュレータ（全体攻撃で運無しの理論近似）</h2>
 
 <div class="panel flex">
 <div>
@@ -62,7 +62,7 @@ canvas{background:#fafafa;border:1px solid #ccc;border-radius:6px}
 ラウンド <span id="round">1</span><br>
 <button onclick="nextTurn()">次のターン</button>
 <button onclick="toggleAuto()">▶/■ 自動進行</button>
-１ターンの時間間隔 <input id="speed" type="range" min="0.2" max="2" step="0.2" value="0.5"> <span id="speedVal">1.0</span>s
+１ターンの時間間隔 <input id="speed" type="range" min="0.2" max="2" step="0.2" value="0.4"> <span id="speedVal">0.4</span>s
 </div>
 
 <div class="panel">
@@ -97,7 +97,7 @@ function render(){
    const d=document.createElement("div");
    d.className="slot "+cls+(s.u===0?" dead":"");
    const p=Math.max(0,s.h)/s.max*100;
-   d.innerHTML=`Slot${i+1} 台数:${s.u} HP:${Math.round(s.h)}
+   d.innerHTML=`Slot${i+1} 台数:${s.u} <br>HP:${Math.round(s.h)}
    <div class="hpbar"><div class="hpfill" style="width:${p}%;background:${cls==="ally"?"#2b6cb0":"#c53030"}"></div></div>`;
    g.appendChild(d);
   });
